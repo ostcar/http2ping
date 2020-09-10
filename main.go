@@ -15,11 +15,9 @@ import (
 	"golang.org/x/net/http2"
 )
 
-const (
-	pingWait = 5 * time.Second
-)
-
 func main() {
+	pingWait := flag.Int("wait", 5, "Time in seconds to wait between pings")
+
 	flag.Parse()
 	url := flag.Arg(0)
 	if url == "" {
@@ -44,7 +42,7 @@ func main() {
 	}()
 
 	for {
-		time.Sleep(pingWait)
+		time.Sleep(time.Duration(*pingWait) * time.Second)
 		fmt.Println("Sending Ping...")
 		if err := client.Ping(context.Background()); err != nil {
 			log.Fatalf("Ping error: %v", err)

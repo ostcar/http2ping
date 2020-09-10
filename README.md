@@ -20,3 +20,10 @@ The tools requries an https addres. For example:
 ```
 http2ping https://localhost:9000/system/autoupdate
 ```
+
+Per default, it sends a http2 ping every 5 seconds. The wait time can be set in
+seconds with the `-wait` flag. The example sends a ping once per minute.
+
+```
+http2ping -w 60 https://localhost:9000/system/autoupdate
+```
