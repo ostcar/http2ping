@@ -41,13 +41,18 @@ func main() {
 		log.Printf("Connection closed")
 	}()
 
+	// Wait for a short time to wait for showing the first data on stdout.
+	time.Sleep(time.Second)
+
 	for {
+		go func() {
+			fmt.Println("Sending Ping...")
+			if err := client.Ping(context.Background()); err != nil {
+				log.Fatalf("Ping error: %v", err)
+			}
+			fmt.Println("Pong received :)")
+		}()
 		time.Sleep(time.Duration(*pingWait) * time.Second)
-		fmt.Println("Sending Ping...")
-		if err := client.Ping(context.Background()); err != nil {
-			log.Fatalf("Ping error: %v", err)
-		}
-		fmt.Println("Pong received :)")
 	}
 }
 
@@ -61,6 +66,7 @@ func connect(addr string) (*http2.ClientConn, io.ReadCloser, error) {
 
 	tlsconfig := &tls.Config{
 		InsecureSkipVerify: true,
+		NextProtos:         []string{"h2"},
 	}
 
 	tconn, err := tls.Dial("tcp", url.Host, tlsconfig)
@@ -80,7 +86,7 @@ func connect(addr string) (*http2.ClientConn, io.ReadCloser, error) {
 
 	resp, err := client.RoundTrip(req)
 	if err != nil {
-		return nil, nil, fmt.Errorf("connect to server: %w", err)
+		return nil, nil, fmt.Errorf("start connection: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
