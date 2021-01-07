@@ -32,8 +32,14 @@ func main() {
 
 	go func() {
 		scanner := bufio.NewScanner(body)
+		var buf []byte
+		scanner.Buffer(buf, 100*1000*1000)
 		for scanner.Scan() {
-			fmt.Println(scanner.Text())
+			t := scanner.Text()
+			if len(t) > 100 {
+				t = t[:100] + "..."
+			}
+			log.Println(t)
 		}
 		if err := scanner.Err(); err != nil {
 			log.Fatalf("Can not read responce body: %v", err)
@@ -46,11 +52,11 @@ func main() {
 
 	for {
 		go func() {
-			fmt.Println("Sending Ping...")
+			log.Println("Sending Ping...")
 			if err := client.Ping(context.Background()); err != nil {
 				log.Fatalf("Ping error: %v", err)
 			}
-			fmt.Println("Pong received :)")
+			log.Println("Pong received :)")
 		}()
 		time.Sleep(time.Duration(*pingWait) * time.Second)
 	}
@@ -83,6 +89,8 @@ func connect(addr string) (*http2.ClientConn, io.ReadCloser, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("creatung request: %w", err)
 	}
+
+	log.Println("Connection established")
 
 	resp, err := client.RoundTrip(req)
 	if err != nil {
